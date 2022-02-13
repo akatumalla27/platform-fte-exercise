@@ -21,7 +21,7 @@ $(venv_script): requirements.txt
 venv: $(venv_script)
 
 deploy: $(venv_script)
-	$(env_activate) && cd infrastructure && cdk bootstrap && cdk deploy \
+	$(env_activate) && cd infrastructure && cdk bootstrap && cdk deploy --require-approval=never \
 		&& cd ../ &&  python3 main.py
 
 destroy: $(venv_script)
