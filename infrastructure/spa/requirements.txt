@@ -1,0 +1,8 @@
+aws_cdk.core>=1.85.0,<2.0
+aws_cdk.aws_cloudfront>=1.85.0,<2.0
+aws_cdk.aws_cloudfront_origins>=1.85.0,<2.0
+aws_cdk.aws_s3>=1.85.0,<2.0
+aws_cdk.aws_iam>=1.85.0,<2.0
+aws_cdk.aws_wafv2>=1.85.0,<2.0
+aws_cdk.aws_iam>=1.85.0,<2.0
+aws_cdk.aws_s3_deployment>=1.85.0,<2.0
