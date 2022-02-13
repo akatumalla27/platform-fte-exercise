@@ -20,9 +20,6 @@ $(venv_script): requirements.txt
 
 venv: $(venv_script)
 
-build: $(venv_script)
-	$(env_activate) && cd infrastructure && cdk synth
-
 deploy: $(venv_script)
 	$(env_activate) && cd infrastructure && cdk bootstrap && cdk deploy \
 		&& cd ../ &&  python3 main.py
@@ -33,4 +30,4 @@ destroy: $(venv_script)
 clean:
 	$(del) .venv
 
-.PHONY: venv build deploy destroy clean
+.PHONY: venv deploy destroy clean
