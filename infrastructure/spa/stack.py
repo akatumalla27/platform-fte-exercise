@@ -1,7 +1,9 @@
 from aws_cdk import (
     core as cdk,
     aws_s3 as s3,
-    aws_s3_deployment as deployment
+    aws_s3_deployment as deployment,
+    aws_cloudfront as cloudfront,
+    aws_cloudfront_origins as origins
 )
 from constructs import Construct
 import _constants as constants
@@ -12,6 +14,7 @@ class SPAStack(cdk.Stack):
         super().__init__(scope, id, **kwargs)
         self.create_bucket()
         self.deploy_template()
+        self.create_distribution()
 
     def create_bucket(self):
         print("Creating S3 bucket with prefix: ", constants.s3WebsiteBucketId)
@@ -37,3 +40,30 @@ class SPAStack(cdk.Stack):
             self, "InitialContent",
             sources=[deployment.Source.asset(constants.s3DeploymentFolder)],
             destination_bucket=self._host_bucket)
+
+    def create_distribution(self):
+        # OAI which gets attached to cloudfront distribution
+        self.origin_access_identity = cloudfront.OriginAccessIdentity(self,
+                                                                      "DemoStaticWebsiteOAI",
+                                                                      comment="OAI for portal cloudfront distribution")
+        # Cloudfront Distribution
+        self.distribution = cloudfront.Distribution(self,
+                                                    "DemoStaticWebsiteDistribution",
+                                                    default_behavior=cloudfront.BehaviorOptions(
+                                                        origin=origins.OriginGroup(
+                                                            primary_origin=origins.S3Origin(self._host_bucket,
+                                                                                            origin_access_identity=self.origin_access_identity),
+                                                            fallback_origin=origins.HttpOrigin(
+                                                                self._host_bucket.bucket_website_domain_name),
+                                                            fallback_status_codes=[500]
+                                                        ),
+                                                        viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                                                        # To accommodate CORS
+                                                        allowed_methods=cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+                                                        cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
+                                                        origin_request_policy=cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN
+                                                    ),
+                                                    # Custom domain here
+                                                    # domain_names=['custom_domain.com'],
+                                                    default_root_object=constants.indexDocument
+                                                    )
