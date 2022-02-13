@@ -3,7 +3,8 @@ from aws_cdk import (
     aws_s3 as s3,
     aws_s3_deployment as deployment,
     aws_cloudfront as cloudfront,
-    aws_cloudfront_origins as origins
+    aws_cloudfront_origins as origins,
+    aws_wafv2 as waf
 )
 from constructs import Construct
 import _constants as constants
@@ -42,6 +43,50 @@ class SPAStack(cdk.Stack):
             destination_bucket=self._host_bucket)
 
     def create_distribution(self):
+        # WAF custom rule
+        custom_rule = waf.CfnWebACL.RuleProperty(
+            name="DemoStaticWebsiteWebACL-AdminURI",
+            priority=100,
+            action=waf.CfnWebACL.RuleActionProperty(
+                block=waf.CfnWebACL.BlockActionProperty(
+                    custom_response=waf.CfnWebACL.CustomResponseProperty(
+                        response_code=401
+                    )
+                )
+            ),
+            statement=waf.CfnWebACL.StatementProperty(
+                byte_match_statement=waf.CfnWebACL.ByteMatchStatementProperty(
+                    search_string='/admin',
+                    field_to_match=waf.CfnWebACL.FieldToMatchProperty(uri_path={}),
+                    positional_constraint="EXACTLY",
+                    text_transformations=[waf.CfnWebACL.TextTransformationProperty(
+                        priority=0,
+                        type="NONE"
+                    )
+                    ],
+                )
+            ),
+            visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                cloud_watch_metrics_enabled=True,
+                sampled_requests_enabled=True,
+                metric_name='DemoSPACustomRuleMetric',
+            )
+        )
+        # WebACL
+        self.web_acl = waf.CfnWebACL(self, "DemoStaticWebsiteWebACL",
+                                     default_action=waf.CfnWebACL.DefaultActionProperty(allow={}),
+                                     scope='CLOUDFRONT',
+                                     visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
+                                         cloud_watch_metrics_enabled=True,
+                                         metric_name='webACL',
+                                         sampled_requests_enabled=True
+                                     ),
+                                     name=f'DemoStaticWebsiteWebACL-1',
+                                     rules=[
+                                         custom_rule,
+                                     ]
+                                     )
+
         # OAI which gets attached to cloudfront distribution
         self.origin_access_identity = cloudfront.OriginAccessIdentity(self,
                                                                       "DemoStaticWebsiteOAI",
@@ -63,7 +108,8 @@ class SPAStack(cdk.Stack):
                                                         cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
                                                         origin_request_policy=cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN
                                                     ),
-                                                    default_root_object=constants.indexDocument
+                                                    default_root_object=constants.indexDocument,
+                                                    web_acl_id=self.web_acl.attr_arn
                                                     # Custom domain here
                                                     # domain_names=['custom_domain.com'],
                                                     # Certificate for custom domain below, assuming it exists in aws certificate manager
