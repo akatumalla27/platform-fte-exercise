@@ -63,7 +63,10 @@ class SPAStack(cdk.Stack):
                                                         cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
                                                         origin_request_policy=cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN
                                                     ),
+                                                    default_root_object=constants.indexDocument
                                                     # Custom domain here
                                                     # domain_names=['custom_domain.com'],
-                                                    default_root_object=constants.indexDocument
+                                                    # Certificate for custom domain below, assuming it exists in aws certificate manager
+                                                    # the below will need an import aws_cdk.aws_certificatemanager as certificatemanager
+                                                    # certificate=certificatemanager.Certificate.from_certificate_arn('pre-existing-certificate-arn')
                                                     )
