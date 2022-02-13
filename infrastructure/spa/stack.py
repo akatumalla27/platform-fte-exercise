@@ -78,7 +78,7 @@ class SPAStack(cdk.Stack):
                                      scope='CLOUDFRONT',
                                      visibility_config=waf.CfnWebACL.VisibilityConfigProperty(
                                          cloud_watch_metrics_enabled=True,
-                                         metric_name='webACL',
+                                         metric_name='DemoSPAWebACLMetric',
                                          sampled_requests_enabled=True
                                      ),
                                      name=f'DemoStaticWebsiteWebACL-1',
