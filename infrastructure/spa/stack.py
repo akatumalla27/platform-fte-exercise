@@ -45,7 +45,7 @@ class SPAStack(cdk.Stack):
     def create_distribution(self):
         # WAF custom rule
         custom_rule = waf.CfnWebACL.RuleProperty(
-            name="DemoStaticWebsiteWebACL-AdminURI",
+            name="DemoStaticWebsiteRule-BlockAdminURI",
             priority=100,
             action=waf.CfnWebACL.RuleActionProperty(
                 block=waf.CfnWebACL.BlockActionProperty(
@@ -81,7 +81,7 @@ class SPAStack(cdk.Stack):
                                          metric_name='DemoSPAWebACLMetric',
                                          sampled_requests_enabled=True
                                      ),
-                                     name=f'DemoStaticWebsiteWebACL-1',
+                                     name=f'DemoStaticWebsiteWebACL',
                                      rules=[
                                          custom_rule,
                                      ]

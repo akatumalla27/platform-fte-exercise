@@ -12,7 +12,9 @@ The AWS infrastructure components used in the project are:
       - Using custom WAF rules
       - Support CORS use case 
 - Additionally, cloudfront also ensures fast delivery of services across the globe using its edge locations. 
-- Cloudfront does introduce a challenge of invalidating cache, but for a simple use case, one can invalidate cache on publishing new contents to the S3 bucket.
+- Cloudfront does introduce a challenge of invalidating cache. One solution could be to invalidate cache on publishing new contents to the S3 bucket.
+
+![aws](aws-system-design.png)
 
 ## Running the code
 
